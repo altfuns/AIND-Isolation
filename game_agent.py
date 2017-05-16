@@ -34,8 +34,15 @@ def custom_score(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    # TODO: finish this function!
-    raise NotImplementedError
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+
+    own_moves = len(game.get_legal_moves(player))
+    opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
+    return float(own_moves - opp_moves)
 
 
 def custom_score_2(game, player):
@@ -211,9 +218,71 @@ class MinimaxPlayer(IsolationPlayer):
         """
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
+        actions = game.get_legal_moves();
+        if not actions:
+            return (-1, -1)
+        _, move = max([(self.min_value(game.forecast_move(a), depth - 1), a) for a in actions])
+        return move
+    def max_value(self, game, depth):
+        """Implements AIMA MAX-VALUE function
 
-        # TODO: finish this function!
-        raise NotImplementedError
+        Parameters
+        ----------
+        game : isolation.Board
+            An instance of the Isolation game `Board` class representing the
+            current game state
+
+        depth : int
+            Depth is an integer representing the maximum number of plies to
+            search in the game tree before aborting
+
+        Returns
+        -------
+        int utility value
+            The game utility value when the are not more legal move for the active player.
+            The evaluation function score when the recursive function have reached the maximum number of plies
+            The max value of the result of min_value function of apply a legal move
+
+        """
+        if self.time_left() < self.TIMER_THRESHOLD:
+            raise SearchTimeout()
+        actions = game.get_legal_moves();
+        if not actions:
+            return game.utility(self)
+        if depth < 1 :
+            return self.score(game, self)
+        v = max([self.min_value(game.forecast_move(a), depth - 1) for a in actions])
+        return v
+    def min_value(self, game, depth):
+        """Implements AIMA MIN-VALUE function
+
+        Parameters
+        ----------
+        game : isolation.Board
+            An instance of the Isolation game `Board` class representing the
+            current game state
+
+        depth : int
+            Depth is an integer representing the maximum number of plies to
+            search in the game tree before aborting
+
+        Returns
+        -------
+        int utility value
+            The game utility value when the are not more legal move for the active player.
+            The evaluation function score when the recursive function have reached the maximum number of plies
+            The min value of the result of max_value function of apply a legal move
+
+        """
+        if self.time_left() < self.TIMER_THRESHOLD:
+            raise SearchTimeout()
+        actions = game.get_legal_moves();
+        if not actions:
+            return game.utility(self)
+        if depth < 1:
+            return self.score(game, self)
+        v = min([self.max_value(game.forecast_move(a), depth - 1) for a in actions])
+        return v
 
 
 class AlphaBetaPlayer(IsolationPlayer):

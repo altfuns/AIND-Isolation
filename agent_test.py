@@ -31,6 +31,15 @@ class IsolationTest(unittest.TestCase):
         print("\nWinner: {}\nOutcome: {}".format(winner, outcome))
         print(self.game.to_string())
         print("Move history:\n{!s}".format(history))
+        
+    def test_alphabeta(self):
+        self.player1 = AlphaBetaPlayer(timeout=0.)
+        self.player2 = AlphaBetaPlayer(timeout=0.)
+        self.game = isolation.Board(self.player1, self.player2)
+        winner, history, outcome = self.game.play()
+        print("\nWinner: {}\nOutcome: {}".format(winner, outcome))
+        print(self.game.to_string())
+        print("Move history:\n{!s}".format(history))
 
 
 

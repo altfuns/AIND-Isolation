@@ -323,8 +323,23 @@ class AlphaBetaPlayer(IsolationPlayer):
         """
         self.time_left = time_left
 
-        # TODO: finish this function!
-        raise NotImplementedError
+        # Initialize the best move so that this function returns something
+        # in case the search fails due to timeout
+        best_move = (-1, -1)
+
+        # Start the interative deepening search
+        depth = 1;
+        while True:
+            # The try/except block will automatically catch the exception
+            # raised when the timer is about to expire.
+            try:
+                best_move = self.alphabeta(game, depth)
+                depth += 1
+            except SearchTimeout:
+                break # Handle any actions required after timeout as needed
+
+        # Return the best move from the last completed search iteration
+        return best_move
 
     def alphabeta(self, game, depth, alpha=float("-inf"), beta=float("inf")):
         """Implement depth-limited minimax search with alpha-beta pruning as
@@ -373,6 +388,91 @@ class AlphaBetaPlayer(IsolationPlayer):
         """
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
+        actions = game.get_legal_moves();
+        if not actions:
+            return (-1, -1)
+        _, move = self.max_value(game, depth, alpha, beta)
+        return move
 
-        # TODO: finish this function!
-        raise NotImplementedError
+    def max_value(self, game, depth, alpha, beta):
+        """Implements AIMA MAX-VALUE function for alpha-beta search
+
+        Parameters
+        ----------
+        game : isolation.Board
+            An instance of the Isolation game `Board` class representing the
+            current game state
+
+        depth : int
+            Depth is an integer representing the maximum number of plies to
+            search in the game tree before aborting
+
+        alpha : float
+            Alpha limits the lower bound of search on minimizing layers. Value is update on the recursive calls
+
+        beta : float
+            Beta limits the upper bound of search on maximizing layers. Value is update on the recursive calls
+
+        Returns
+        -------
+        tuple utility value, legal move
+            The evaluation function score when the recursive function have reached the maximum depth
+            The max score from the evaluation function and lega move linked with that value.
+
+        """
+        if self.time_left() < self.TIMER_THRESHOLD:
+            raise SearchTimeout()
+        actions = game.get_legal_moves();
+        if not actions or depth < 1:
+            return self.score(game, self)
+        v = float("-inf")
+        scores = []
+        for a in actions:
+            v = self.min_value(game.forecast_move(a), depth - 1, alpha, beta)
+            if v >= beta:
+                return (v , a)
+            alpha = max([alpha, v])
+            scores.append((v, a))
+        return max(scores)
+
+    def min_value(self, game, depth, alpha, beta):
+        """Implements AIMA MIN-VALUE function
+
+        Parameters
+        ----------
+        game : isolation.Board
+            An instance of the Isolation game `Board` class representing the
+            current game state
+
+        depth : int
+            Depth is an integer representing the maximum number of plies to
+            search in the game tree before aborting
+
+        alpha : float
+            Alpha limits the lower bound of search on minimizing layers. Value is update on the recursive calls
+
+        beta : float
+            Beta limits the upper bound of search on maximizing layers. Value is update on the recursive calls
+
+        Returns
+        -------
+        int utility value
+            The evaluation function score when the recursive function have reached the maximum depth
+            The min score from the evaluation function.
+
+        """
+        if self.time_left() < self.TIMER_THRESHOLD:
+            raise SearchTimeout()
+        actions = game.get_legal_moves();
+        if not actions or depth < 1:
+            return self.score(game, self)
+        v = float("inf")
+        scores = []
+        for a in actions:
+            maxv = self.max_value(game.forecast_move(a), depth - 1, alpha, beta)
+            v = maxv[0] if isinstance(maxv, tuple) else maxv
+            if v <= alpha:
+                return v
+            beta = min([beta, v])
+            scores.append(v)
+        return min(scores)

@@ -3,6 +3,7 @@ test your agent's strength against a set of known agents using tournament.py
 and include the results in your report.
 """
 import random
+import math
 
 
 class SearchTimeout(Exception):
@@ -34,15 +35,28 @@ def custom_score(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    if game.is_loser(player):
+    own_legal_moves = game.get_legal_moves(player)
+    opp_legal_moves = game.get_legal_moves(game.get_opponent(player))
+    if player == game.active_player and not own_legal_moves:
         return float("-inf")
-
-    if game.is_winner(player):
+    if player == game.inactive_player and not opp_legal_moves:
         return float("inf")
+    own_moves = len(own_legal_moves)
+    opp_moves = len(opp_legal_moves)
 
-    own_moves = len(game.get_legal_moves(player))
-    opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
-    return float(own_moves - opp_moves)
+    w, h = game.width / 2., game.height / 2.
+    y1, x1 = game.get_player_location(player)
+    center_distance = abs(math.hypot(w - x1, h - y1))
+
+    opp_location = game.get_player_location(game.get_opponent(player))
+    if opp_location is None:
+         return float((own_moves - 3 * opp_moves) / (center_distance/2))
+    y2, x2 = opp_location
+    opp_center_distance = abs(math.hypot(w - x2, h - y2))
+
+    # Combine the improved and center heuristic.
+    # Use the opponent distance to center to normalize the opp_moves
+    return float((own_moves/center_distance) - (3 * opp_moves/opp_center_distance))
 
 
 def custom_score_2(game, player):
@@ -67,9 +81,23 @@ def custom_score_2(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    # TODO: finish this function!
-    raise NotImplementedError
+    own_legal_moves = game.get_legal_moves(player)
+    opp_legal_moves = game.get_legal_moves(game.get_opponent(player))
 
+
+    if player == game.active_player and not own_legal_moves:
+        return float("-inf")
+    if player == game.inactive_player and not opp_legal_moves:
+        return float("inf")
+
+    own_moves = len(own_legal_moves)
+    opp_moves = len(opp_legal_moves)
+
+    w, h = game.width / 2., game.height / 2.
+    y1, x1 = game.get_player_location(player)
+    center_distance = abs(math.hypot(w - x1, h - y1))
+
+    return float((own_moves - 3 * opp_moves) / (center_distance/2))
 
 def custom_score_3(game, player):
     """Calculate the heuristic value of a game state from the point of view
@@ -93,8 +121,19 @@ def custom_score_3(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    # TODO: finish this function!
-    raise NotImplementedError
+    own_legal_moves = game.get_legal_moves(player)
+    opp_legal_moves = game.get_legal_moves(game.get_opponent(player))
+    if player == game.active_player and not own_legal_moves:
+        return float("-inf")
+    if player == game.inactive_player and not opp_legal_moves:
+        return float("inf")
+    own_moves = len(own_legal_moves)
+    opp_moves = len(opp_legal_moves)
+
+    w, h = game.width / 2., game.height / 2.
+    y1, x1 = game.get_player_location(player)
+    center_distance = abs(math.hypot(w - x1, h - y1))
+    return float((own_moves - 2 * opp_moves) / (center_distance/2))
 
 
 class IsolationPlayer:
